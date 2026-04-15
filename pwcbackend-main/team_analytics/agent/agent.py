@@ -6,17 +6,15 @@ Usage:
     result = run_agent("Who should replace Yazan Al Naimat at striker?")
 """
 
-import os
-
-from langchain_anthropic import ChatAnthropic
+from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage
 from langgraph.prebuilt import create_react_agent
 
 from .tools import ALL_TOOLS
 
+GROQ_API_KEY = "YOUR_GROQ_API_KEY_HERE"
+
 # ── System prompt ─────────────────────────────────────────────────────────────
-# Persona: a brilliant football analyst who merges tactical football knowledge
-# with hard data, always grounding recommendations in squad reality.
 
 SYSTEM_PROMPT = """You are **TactiqAI** — the elite football analytics intelligence
 embedded in the Jordan National Football Team's coaching staff system for the
@@ -68,17 +66,18 @@ def build_agent():
 
     The agent is stateless per invocation — pass full context in each call.
     """
-    llm = ChatAnthropic(
-        model=os.getenv("TACTIQ_MODEL", "claude-sonnet-4-6"),
-        api_key=os.getenv("ANTHROPIC_API_KEY", ""),
-        temperature=0.2,  # factual, low creativity
+    llm = ChatOpenAI(
+        model="llama-3.3-70b-versatile",
+        api_key=GROQ_API_KEY,
+        base_url="https://api.groq.com/openai/v1",
+        temperature=0.2,
         max_tokens=2048,
     )
 
     agent = create_react_agent(
         model=llm,
         tools=ALL_TOOLS,
-        state_modifier=SystemMessage(content=SYSTEM_PROMPT),
+        prompt=SystemMessage(content=SYSTEM_PROMPT),
     )
     return agent
 
