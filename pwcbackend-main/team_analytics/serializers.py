@@ -167,6 +167,8 @@ class PlayerMatchStatSerializer(serializers.ModelSerializer):
 
 class PlayerDetailSerializer(serializers.ModelSerializer):
     primary_position = serializers.CharField(source="primary_position.code", default=None)
+    team_name = serializers.CharField(source="team.name")
+    current_club_name = serializers.CharField(source="current_club.name", default=None)
     season_summary = serializers.SerializerMethodField()
     strengths = serializers.SerializerMethodField()
     suitability_score = serializers.SerializerMethodField()
@@ -178,7 +180,12 @@ class PlayerDetailSerializer(serializers.ModelSerializer):
             "name",
             "status",
             "primary_position",
+            "team_name",
+            "current_club_name",
             "overall_rating",
+            "pace",
+            "passing",
+            "stamina",
             "recent_form_index",
             "fitness_score",
             "minutes_last_5",
