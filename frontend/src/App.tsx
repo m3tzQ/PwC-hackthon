@@ -16,7 +16,7 @@ function App() {
         <main className="page-main">
           <Routes>
             <Route path="/" element={<DashboardPage />} />
-            <Route path="/players" element={<Navigate to="/players/3" replace />} />
+            <Route path="/players" element={<Navigate to="/players/1" replace />} />
             <Route path="/players/:playerId" element={<PlayerProfilePage />} />
             <Route path="/players/:playerId/history" element={<PlayerHistoryPage />} />
             <Route path="/matches/next-insights" element={<MatchInsightsPage />} />

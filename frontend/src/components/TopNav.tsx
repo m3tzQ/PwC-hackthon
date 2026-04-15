@@ -2,8 +2,8 @@ import { NavLink } from 'react-router-dom'
 
 const links = [
   { to: '/', label: 'Dashboard' },
-  { to: '/players/3', label: 'Player Profile' },
-  { to: '/players/3/history', label: 'Player History' },
+  { to: '/players/1', label: 'Player Profile' },
+  { to: '/players/1/history', label: 'Player History' },
   { to: '/matches/next-insights', label: 'Match Insights' },
   { to: '/admin', label: 'Admin' },
 ]
