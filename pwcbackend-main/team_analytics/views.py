@@ -8,6 +8,8 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
+from .analytics import get_player_statistics
+
 from .models import (
     Club,
     InjuryStatus,
@@ -615,6 +617,63 @@ def admin_overview(request):
         "data_freshness": "healthy" if last_snapshot and (date.today() - last_snapshot.created_at.date()).days <= 1 else "stale",
     }
     return Response(success_response(data))
+
+
+@api_view(["GET"])
+def player_statistics_by_status(request):
+    """
+    Return aggregated statistics for all players carrying the given status.
+
+    GET /api/v1/players/statistics?status=FIT
+    GET /api/v1/players/statistics?status=INJ
+    GET /api/v1/players/statistics?status=SUS
+    """
+    status_param = request.query_params.get("status", "").strip().upper()
+    if not status_param:
+        return error_response("VALIDATION_ERROR", "Query param 'status' is required (FIT, INJ, SUS).")
+
+    try:
+        data = get_player_statistics(status_param)
+    except ValueError as exc:
+        return error_response("VALIDATION_ERROR", str(exc))
+
+    return Response(success_response(data))
+
+
+@api_view(["POST"])
+def agent_chat(request):
+    """
+    Query TactiqAI — the LangChain React agent.
+
+    POST /api/v1/agent/chat
+    Body: { "query": "Who should replace the injured striker?" }
+
+    Optional: pass "history" as a list of {role, content} objects for
+    multi-turn conversations.
+    """
+    query = (request.data.get("query") or "").strip()
+    if not query:
+        return error_response("VALIDATION_ERROR", "Body field 'query' is required.")
+
+    history = request.data.get("history", [])
+
+    try:
+        from .agent.agent import run_agent  # noqa: PLC0415
+        result = run_agent(query, session_history=history)
+    except Exception as exc:  # noqa: BLE001
+        return error_response("AGENT_ERROR", f"Agent failed: {exc}", http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    if result.get("error"):
+        return error_response("AGENT_ERROR", result["error"], http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    return Response(
+        success_response(
+            {
+                "answer": result["answer"],
+                "tool_steps": result["steps"],
+            }
+        )
+    )
 
 
 @api_view(["POST"])

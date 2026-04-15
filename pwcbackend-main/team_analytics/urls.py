@@ -3,6 +3,7 @@ from django.urls import path
 from .views import (
     admin_overview,
     admin_recompute_recommendations,
+    agent_chat,
     dashboard_lineup_board,
     dashboard_key_injuries,
     dashboard_opponent_summary,
@@ -13,6 +14,7 @@ from .views import (
     injury_update,
     match_insights,
     next_match_insights,
+    player_statistics_by_status,
     player_update,
     players_collection,
     player_detail,
@@ -32,6 +34,7 @@ urlpatterns = [
     path("dashboard/opponent-summary", dashboard_opponent_summary),
     path("dashboard/lineup-board", dashboard_lineup_board),
     path("players", players_collection),
+    path("players/statistics", player_statistics_by_status),
     path("players/<int:player_id>", player_detail),
     path("players/<int:player_id>/update", player_update),
     path("players/<int:player_id>/history", player_history),
@@ -46,4 +49,5 @@ urlpatterns = [
     path("workflow/replacements/decisions/<int:decision_id>", replacement_decision_update),
     path("admin/overview", admin_overview),
     path("admin/recommendations/recompute", admin_recompute_recommendations),
+    path("agent/chat", agent_chat),
 ]
