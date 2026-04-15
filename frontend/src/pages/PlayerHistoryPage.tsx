@@ -25,15 +25,18 @@ function PlayerHistoryPage() {
           getPlayerHistory(activePlayerId, { last_n: 10 }),
         ])
 
-        if (!mounted) return
-        setActivePlayer(player)
-        setHistoryRows(history)
+        if (mounted) {
+          setActivePlayer(player)
+          setHistoryRows(history)
+        }
       } catch (error) {
-        if (!mounted) return
-        setErrorMessage(error instanceof Error ? error.message : 'Failed to load player history.')
+        if (mounted) {
+          setErrorMessage(error instanceof Error ? error.message : 'Failed to load player history.')
+        }
       } finally {
-        if (!mounted) return
-        setIsLoading(false)
+        if (mounted) {
+          setIsLoading(false)
+        }
       }
     }
 

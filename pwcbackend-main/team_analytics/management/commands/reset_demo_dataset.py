@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
+from django.db import connection
 
 from team_analytics.models import (
     Club,
@@ -21,20 +22,49 @@ from team_analytics.models import (
 class Command(BaseCommand):
     help = "Reset and seed demo dataset for Jordan WC 2026 MVP."
 
+    @staticmethod
+    def _safe_delete(model, existing_tables):
+        table_name = model._meta.db_table
+        if table_name in existing_tables:
+            model.objects.all().delete()
+
     def handle(self, *args, **kwargs):
         self.stdout.write("Resetting demo data...")
-        ReplacementDecision.objects.all().delete()
-        RecommendationSnapshot.objects.all().delete()
-        InjuryStatus.objects.all().delete()
-        PlayerMatchStat.objects.all().delete()
-        Match.objects.all().delete()
-        OpponentProfile.objects.all().delete()
-        Player.objects.all().delete()
-        Position.objects.all().delete()
-        Club.objects.all().delete()
-        Competition.objects.all().delete()
-        Season.objects.all().delete()
-        Team.objects.all().delete()
+        existing_tables = set(connection.introspection.table_names())
+
+        required_models = [
+            Team,
+            Club,
+            Position,
+            Player,
+            Competition,
+            Season,
+            Match,
+            PlayerMatchStat,
+            InjuryStatus,
+            OpponentProfile,
+            RecommendationSnapshot,
+        ]
+        missing_tables = [model._meta.db_table for model in required_models if model._meta.db_table not in existing_tables]
+        if missing_tables:
+            raise CommandError(
+                "Database schema is not ready for seeding. "
+                f"Missing tables: {', '.join(missing_tables)}. "
+                "Run migrations with a database user that has CREATE privileges."
+            )
+
+        self._safe_delete(ReplacementDecision, existing_tables)
+        self._safe_delete(RecommendationSnapshot, existing_tables)
+        self._safe_delete(InjuryStatus, existing_tables)
+        self._safe_delete(PlayerMatchStat, existing_tables)
+        self._safe_delete(Match, existing_tables)
+        self._safe_delete(OpponentProfile, existing_tables)
+        self._safe_delete(Player, existing_tables)
+        self._safe_delete(Position, existing_tables)
+        self._safe_delete(Club, existing_tables)
+        self._safe_delete(Competition, existing_tables)
+        self._safe_delete(Season, existing_tables)
+        self._safe_delete(Team, existing_tables)
 
         jordan = Team.objects.create(name="Jordan", fifa_code="JOR")
         spain = Team.objects.create(name="Spain", fifa_code="ESP")

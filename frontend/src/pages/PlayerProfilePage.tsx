@@ -25,15 +25,18 @@ function PlayerProfilePage() {
           listPlayers(),
         ])
 
-        if (!mounted) return
-        setActivePlayer(detail)
-        setPlayers(allPlayers)
+        if (mounted) {
+          setActivePlayer(detail)
+          setPlayers(allPlayers)
+        }
       } catch (error) {
-        if (!mounted) return
-        setErrorMessage(error instanceof Error ? error.message : 'Failed to load player profile.')
+        if (mounted) {
+          setErrorMessage(error instanceof Error ? error.message : 'Failed to load player profile.')
+        }
       } finally {
-        if (!mounted) return
-        setIsLoading(false)
+        if (mounted) {
+          setIsLoading(false)
+        }
       }
     }
 
