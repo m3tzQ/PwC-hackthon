@@ -10,13 +10,18 @@ function buildUrl(path: string): string {
 }
 
 export class ApiRequestError extends Error {
+  readonly statusCode: number
+  readonly details?: unknown
+
   constructor(
     message: string,
-    readonly statusCode: number,
-    readonly details?: unknown,
+    statusCode: number,
+    details?: unknown,
   ) {
     super(message)
     this.name = 'ApiRequestError'
+    this.statusCode = statusCode
+    this.details = details
   }
 }
 

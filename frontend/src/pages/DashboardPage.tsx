@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import FieldBoard from '../components/FieldBoard'
 import MetricCard from '../components/MetricCard'
@@ -120,7 +120,7 @@ function DashboardPage() {
 
   const selectedPositionCurrentChoice = manualSelections[selectedPosition]
 
-  useMemo(() => {
+  useEffect(() => {
     void refreshDashboard()
   }, [refreshDashboard])
 

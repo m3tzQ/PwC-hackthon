@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import type { LineupBoardItem, PositionKey } from '../types/domain'
+import type { LineupBoardItem, PositionKey } from '../types/domain.ts'
 
 interface FieldBoardProps {
   lineup: LineupBoardItem[]

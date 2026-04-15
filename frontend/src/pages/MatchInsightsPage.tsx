@@ -11,11 +11,12 @@ import {
 import type {
   InjuryItem,
   LineupBoardItem,
+  MatchLineupScenario,
   MatchInsightsData,
   NextMatchInsightsResponse,
   ReplacementDecision,
   TopOption,
-} from '../types/domain'
+} from '../types/domain.ts'
 
 function MatchInsightsPage() {
   const [insightsPayload, setInsightsPayload] = useState<NextMatchInsightsResponse | null>(null)
@@ -65,18 +66,21 @@ function MatchInsightsPage() {
           listReplacementDecisions(),
         ])
 
-        if (!mounted) return
-        setInsightsPayload(nextInsights)
-        setLineup(lineupData)
-        setInjuries(injuryData)
-        setDecisions(decisionData)
-        setSelectedInjuryId(injuryData[0]?.player_id ?? null)
+        if (mounted) {
+          setInsightsPayload(nextInsights)
+          setLineup(lineupData)
+          setInjuries(injuryData)
+          setDecisions(decisionData)
+          setSelectedInjuryId(injuryData[0]?.player_id ?? null)
+        }
       } catch (error) {
-        if (!mounted) return
-        setErrorMessage(error instanceof Error ? error.message : 'Failed to load match insights.')
+        if (mounted) {
+          setErrorMessage(error instanceof Error ? error.message : 'Failed to load match insights.')
+        }
       } finally {
-        if (!mounted) return
-        setIsLoading(false)
+        if (mounted) {
+          setIsLoading(false)
+        }
       }
     }
 
@@ -204,7 +208,7 @@ function MatchInsightsPage() {
             <div>
               <h4>Strengths</h4>
               <ul>
-                {(insights?.tactical_strengths ?? []).map((item) => (
+                {(insights?.tactical_strengths ?? []).map((item: string) => (
                   <li key={item}>{item}</li>
                 ))}
               </ul>
@@ -212,7 +216,7 @@ function MatchInsightsPage() {
             <div>
               <h4>Vulnerabilities</h4>
               <ul>
-                {(insights?.tactical_weaknesses ?? []).map((item) => (
+                {(insights?.tactical_weaknesses ?? []).map((item: string) => (
                   <li key={item}>{item}</li>
                 ))}
               </ul>
@@ -308,7 +312,7 @@ function MatchInsightsPage() {
             <article key={decision.id} className="rank-item">
               <p className="rank-number">{decision.position ?? 'N/A'}</p>
               <div>
-                <h4>{decision.injured_player_name} -> {decision.replacement_player_name}</h4>
+                <h4>{decision.injured_player_name} to {decision.replacement_player_name}</h4>
                 <p className="muted">{decision.notes || 'No notes'}</p>
               </div>
               <button
@@ -329,7 +333,7 @@ function MatchInsightsPage() {
         <p className="section-eyebrow">Coaching Notes</p>
         <h3>Suggested Strategy Plan</h3>
         <div className="notes-grid">
-          {(insights?.lineup_scenarios ?? []).map((scenario) => (
+          {(insights?.lineup_scenarios ?? []).map((scenario: MatchLineupScenario) => (
             <article key={scenario.label} className="note-card">
               <p>
                 <strong>{scenario.label}:</strong> {scenario.focus}
