@@ -1,21 +1,77 @@
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { getHistoryByPlayer, getPlayerById, players } from '../data/mockData'
+import { getPlayerDetail, getPlayerHistory } from '../api/teamAnalytics'
+import type { PlayerDetail, PlayerHistoryItem } from '../types/domain'
 
 function PlayerHistoryPage() {
   const { playerId } = useParams()
   const parsedId = Number(playerId)
-  const activePlayer = getPlayerById(Number.isNaN(parsedId) ? 3 : parsedId) ?? players[0]
+  const activePlayerId = Number.isNaN(parsedId) ? 1 : parsedId
+  const [activePlayer, setActivePlayer] = useState<PlayerDetail | null>(null)
+  const [historyRows, setHistoryRows] = useState<PlayerHistoryItem[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const historyRows = getHistoryByPlayer(activePlayer.id)
-  const averageRating =
-    historyRows.length > 0
-      ? (historyRows.reduce((sum, row) => sum + row.rating, 0) / historyRows.length).toFixed(2)
-      : '0.00'
+  useEffect(() => {
+    let mounted = true
+
+    const loadData = async () => {
+      setIsLoading(true)
+      setErrorMessage(null)
+
+      try {
+        const [player, history] = await Promise.all([
+          getPlayerDetail(activePlayerId),
+          getPlayerHistory(activePlayerId, { last_n: 10 }),
+        ])
+
+        if (!mounted) return
+        setActivePlayer(player)
+        setHistoryRows(history)
+      } catch (error) {
+        if (!mounted) return
+        setErrorMessage(error instanceof Error ? error.message : 'Failed to load player history.')
+      } finally {
+        if (!mounted) return
+        setIsLoading(false)
+      }
+    }
+
+    void loadData()
+    return () => {
+      mounted = false
+    }
+  }, [activePlayerId])
+
+  const averageRating = useMemo(() => {
+    if (!historyRows.length) return '0.00'
+    return (historyRows.reduce((sum, row) => sum + row.rating, 0) / historyRows.length).toFixed(2)
+  }, [historyRows])
 
   const totalContributions = historyRows.reduce(
     (sum, row) => sum + row.goals + row.assists,
     0,
   )
+
+  if (isLoading) {
+    return (
+      <section className="card-surface">
+        <p className="section-eyebrow">Player History</p>
+        <h2>Loading match timeline...</h2>
+      </section>
+    )
+  }
+
+  if (errorMessage || !activePlayer) {
+    return (
+      <section className="card-surface">
+        <p className="section-eyebrow">Player History</p>
+        <h2>History unavailable</h2>
+        <p className="section-copy">{errorMessage ?? 'No data found for this player.'}</p>
+        <Link className="primary-action" to="/admin">Open Admin</Link>
+      </section>
+    )
+  }
 
   return (
     <div className="page-stack">
@@ -37,7 +93,7 @@ function PlayerHistoryPage() {
           </article>
           <article className="metric-card">
             <p className="metric-label">Minutes Last 5</p>
-            <p className="metric-value">{activePlayer.minutesLast5}</p>
+            <p className="metric-value">{activePlayer.minutes_last_5}</p>
           </article>
         </div>
       </section>
@@ -52,27 +108,30 @@ function PlayerHistoryPage() {
                 <tr>
                   <th>Date</th>
                   <th>Opponent</th>
-                  <th>Comp</th>
-                  <th>Result</th>
                   <th>Min</th>
                   <th>G/A</th>
+                  <th>Pass %</th>
                   <th>Rating</th>
                 </tr>
               </thead>
               <tbody>
                 {historyRows.map((row) => (
-                  <tr key={`${row.playerId}-${row.date}-${row.opponent}`}>
-                    <td>{row.date}</td>
+                  <tr key={`${row.id}-${row.match_date}`}> 
+                    <td>{row.match_date}</td>
                     <td>{row.opponent}</td>
-                    <td>{row.competition}</td>
-                    <td>{row.result}</td>
-                    <td>{row.minutes}</td>
+                    <td>{row.minutes_played}</td>
                     <td>
                       {row.goals}/{row.assists}
                     </td>
+                    <td>{Math.round(row.pass_accuracy_percent)}%</td>
                     <td>{row.rating}</td>
                   </tr>
                 ))}
+                {!historyRows.length ? (
+                  <tr>
+                    <td colSpan={6} className="muted">No match history entries yet.</td>
+                  </tr>
+                ) : null}
               </tbody>
             </table>
           </div>
@@ -83,10 +142,10 @@ function PlayerHistoryPage() {
           <h3>Rating and Duel Trend</h3>
           <div className="spark-grid">
             {historyRows.map((row) => (
-              <article key={`${row.date}-${row.opponent}`} className="spark-item">
+              <article key={`${row.id}-${row.opponent}`} className="spark-item">
                 <div className="spark-header">
                   <p>{row.opponent}</p>
-                  <p className="muted">{row.date}</p>
+                  <p className="muted">{row.match_date}</p>
                 </div>
                 <div className="mini-bars">
                   <div>
@@ -94,12 +153,12 @@ function PlayerHistoryPage() {
                     <span style={{ width: `${(row.rating / 10) * 100}%` }} />
                   </div>
                   <div>
-                    <p>Duels Won</p>
-                    <span style={{ width: `${Math.min((row.duelsWon / 10) * 100, 100)}%` }} />
+                    <p>Pass Accuracy</p>
+                    <span style={{ width: `${Math.min(row.pass_accuracy_percent, 100)}%` }} />
                   </div>
                   <div>
-                    <p>Key Passes</p>
-                    <span style={{ width: `${Math.min((row.keyPasses / 5) * 100, 100)}%` }} />
+                    <p>Distance Covered</p>
+                    <span style={{ width: `${Math.min((row.distance_covered_km / 12) * 100, 100)}%` }} />
                   </div>
                 </div>
               </article>
