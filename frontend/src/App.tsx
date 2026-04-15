@@ -6,6 +6,7 @@ import MatchInsightsPage from './pages/MatchInsightsPage'
 import NotFoundPage from './pages/NotFoundPage'
 import PlayerHistoryPage from './pages/PlayerHistoryPage'
 import PlayerProfilePage from './pages/PlayerProfilePage'
+import TactiqAIChatPage from './pages/TactiqAIChatPage'
 import './App.css'
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
             <Route path="/players/:playerId/history" element={<PlayerHistoryPage />} />
             <Route path="/matches/next-insights" element={<MatchInsightsPage />} />
             <Route path="/admin" element={<AdminDashboardPage />} />
+            <Route path="/chat" element={<TactiqAIChatPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>

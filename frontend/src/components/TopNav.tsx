@@ -6,6 +6,7 @@ const links = [
   { to: '/players/1/history', label: 'Player History' },
   { to: '/matches/next-insights', label: 'Match Insights' },
   { to: '/admin', label: 'Admin' },
+  { to: '/chat', label: 'TactiqAI' },
 ]
 
 function TopNav() {

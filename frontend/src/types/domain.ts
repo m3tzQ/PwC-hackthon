@@ -327,6 +327,21 @@ export type AvailabilityStatus = 'Fit' | 'Questionable' | 'Out'
     hint?: string
   }
 
+  export interface AgentToolStep {
+    tool: string
+    output_preview: string
+  }
+
+  export interface AgentChatResponse {
+    answer: string
+    tool_steps: AgentToolStep[]
+  }
+
+  export interface AgentChatPayload {
+    query: string
+    history?: Array<{ role: 'user' | 'assistant'; content: string }>
+  }
+
   export interface PositionSelectionState {
     [position: string]: TopOption
   }

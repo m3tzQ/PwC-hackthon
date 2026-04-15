@@ -3,6 +3,8 @@ import type {
   AdminOverview,
   AdminRecomputePayload,
   AdminRecomputeResponse,
+  AgentChatPayload,
+  AgentChatResponse,
   ApiHealth,
   DashboardTopOptionsParams,
   InjuryCreatePayload,
@@ -150,4 +152,8 @@ export async function createReplacementDecision(payload: ReplacementDecisionCrea
 
 export async function updateReplacementDecision(decisionId: number, payload: ReplacementDecisionUpdatePayload): Promise<ReplacementDecision> {
   return patchData<ReplacementDecision, ReplacementDecisionUpdatePayload>(`/workflow/replacements/decisions/${decisionId}`, payload)
+}
+
+export async function sendAgentMessage(payload: AgentChatPayload): Promise<AgentChatResponse> {
+  return postData<AgentChatResponse, AgentChatPayload>('/agent/chat', payload)
 }
